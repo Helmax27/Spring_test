@@ -23,7 +23,7 @@ public class JsondbApplicationTests {
 	public void createUser() throws IOException {
 		Set<Users> oldLoads = getLoads();
 		Users newUsers = new Users().withName("Test name").withAddress("Test address").withPhone("Test phone");
-		long userId = createUsers(newUsers);
+		int userId = createUsers(newUsers);
 		Set<Users> newLoads = getLoads();
 		oldLoads.add(newUsers.withId(userId));
 		Assert.assertEquals(newLoads, oldLoads);
@@ -31,20 +31,43 @@ public class JsondbApplicationTests {
 	private Set<Users> getLoads() throws IOException {
 		String json = Request.Get("http://localhost:8080/users/list").execute().returnContent().asString();
 		JsonElement parsed = new JsonParser().parse(json);
-		JsonElement list = parsed.getAsJsonObject().get("Object");
-		return new Gson().fromJson(list, new TypeToken<Set<Users>>(){}.getType());
+		return new Gson().fromJson(parsed, new TypeToken<Set<Users>>(){}.getType());
 
 	}
 
-	private long createUsers(Users newUsers) throws IOException {
+	private int createUsers(Users newUsers) throws IOException {
+		String json = Request.Post("http://localhost:8080/users/list").
+			bodyForm(new BasicNameValuePair("name",newUsers.getName()),
+				new BasicNameValuePair("address", newUsers.getAddress()),
+				new BasicNameValuePair("phone", newUsers.getPhone())).
+				execute().returnContent().asString();
+		JsonElement parsed = new JsonParser().parse(json);
+		return parsed.getAsJsonObject().get("Id").getAsInt();
+	}
+
+	@Test
+	public void updateUser() throws IOException {
+		Set<Users> oldLoads = getLoads();
+		Users newUsers = new Users().withId(oldLoads.size() - 1).withName("Update name").withAddress("Update address").withPhone("Update phone");
+		int userId = createUsers(newUsers);
+		Set<Users> newLoads = getLoads();
+		oldLoads.add(newUsers.withId(userId));
+		Assert.assertEquals(newLoads, oldLoads);
+	}
+	private Set<Users> getLoads() throws IOException {
+		String json = Request.Get("http://localhost:8080/users/list").execute().returnContent().asString();
+		JsonElement parsed = new JsonParser().parse(json);
+		return new Gson().fromJson(parsed, new TypeToken<Set<Users>>(){}.getType());
+
+	}
+
+	private int updateUsers(Users newUsers) throws IOException {
 		String json = Request.Post("http://localhost:8080/users/list").
 				bodyForm(new BasicNameValuePair("name",newUsers.getName()),
 						new BasicNameValuePair("address", newUsers.getAddress()),
 						new BasicNameValuePair("phone", newUsers.getPhone())).
 				execute().returnContent().asString();
 		JsonElement parsed = new JsonParser().parse(json);
-		return parsed.getAsJsonObject().get("Id").getAsLong();
-
+		return parsed.getAsJsonObject().get("Id").getAsInt();
 	}
-
 }

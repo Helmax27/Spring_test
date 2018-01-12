@@ -3,16 +3,16 @@ package com.springtest.jsondb;
 import java.util.Objects;
 
 public class Users {
-    private long id;
+    private int id;
     private String name;
     private String address;
     private String phone;
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public Users withId(long id) {
+    public Users withId(int id) {
         this.id = id;
         return this;
     }
@@ -43,6 +43,8 @@ public class Users {
         this.phone = phone;
         return this;
     }
+
+
 
     @Override
     public boolean equals(Object o) {
