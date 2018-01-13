@@ -36,7 +36,7 @@ public class JsondbApplicationTests {
 	}
 
 	private int createUsers(Users newUsers) throws IOException {
-		String json = Request.Post("http://localhost:8080/users/list").
+		String json = Request.Put("http://localhost:8080/users/list").
 			bodyForm(new BasicNameValuePair("name",newUsers.getName()),
 				new BasicNameValuePair("address", newUsers.getAddress()),
 				new BasicNameValuePair("phone", newUsers.getPhone())).
@@ -48,26 +48,44 @@ public class JsondbApplicationTests {
 	@Test
 	public void updateUser() throws IOException {
 		Set<Users> oldLoads = getLoads();
-		Users newUsers = new Users().withId(oldLoads.size() - 1).withName("Update name").withAddress("Update address").withPhone("Update phone");
-		int userId = createUsers(newUsers);
+		Users modUsers = new Users().withId(oldLoads.size()).withName("Update name").
+				withAddress("Update address").withPhone("Update phone");
+		Request.Post("http://localhost:8080/users/list").
+				bodyForm(new BasicNameValuePair("Id", Integer.toString(oldLoads.size() - 1)),
+						new BasicNameValuePair("name",modUsers.getName()),
+						new BasicNameValuePair("address", modUsers.getAddress()),
+						new BasicNameValuePair("phone", modUsers.getPhone())).
+				execute().returnContent().asString();
 		Set<Users> newLoads = getLoads();
-		oldLoads.add(newUsers.withId(userId));
 		Assert.assertEquals(newLoads, oldLoads);
 	}
-	private Set<Users> getLoads() throws IOException {
-		String json = Request.Get("http://localhost:8080/users/list").execute().returnContent().asString();
-		JsonElement parsed = new JsonParser().parse(json);
-		return new Gson().fromJson(parsed, new TypeToken<Set<Users>>(){}.getType());
 
+	@Test
+	public void deleteUser() throws IOException {
+		Set<Users> oldLoads = getLoads();
+		Users delUsers = new Users().withId(oldLoads.size()).withName(null).
+				withAddress(null).withPhone(null);
+		Request.Delete("http://localhost:8080/users/list").
+				bodyForm(new BasicNameValuePair("Id", Integer.toString(oldLoads.size() - 1)),
+						new BasicNameValuePair("name",delUsers.getName()),
+						new BasicNameValuePair("address", delUsers.getAddress()),
+						new BasicNameValuePair("phone", delUsers.getPhone())).
+				execute().returnContent().asString();
+		Set<Users> newLoads = getLoads();
+		oldLoads.remove(delUsers);
+		Assert.assertEquals(newLoads, oldLoads);
 	}
 
-	private int updateUsers(Users newUsers) throws IOException {
-		String json = Request.Post("http://localhost:8080/users/list").
-				bodyForm(new BasicNameValuePair("name",newUsers.getName()),
-						new BasicNameValuePair("address", newUsers.getAddress()),
-						new BasicNameValuePair("phone", newUsers.getPhone())).
+	@Test
+	public void readUser() throws IOException {
+		Set<Users> oldLoads = getLoads();
+		Users readUsers = new Users().withId(oldLoads.size()).withName(null).
+				withAddress(null).withPhone(null);
+		Request.Get("http://localhost:8080/users/list").
+				bodyForm(new BasicNameValuePair("Id", Integer.toString(oldLoads.size() - 1)),
+						new BasicNameValuePair("name",readUsers.getName()),
+						new BasicNameValuePair("address", readUsers.getAddress()),
+						new BasicNameValuePair("phone", readUsers.getPhone())).
 				execute().returnContent().asString();
-		JsonElement parsed = new JsonParser().parse(json);
-		return parsed.getAsJsonObject().get("Id").getAsInt();
 	}
 }

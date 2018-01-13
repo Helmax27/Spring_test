@@ -23,19 +23,11 @@ public class JsondbApplication {
 	@Bean
 	CommandLineRunner runner(UserService userService) {
 		return args -> {
-			// read json and wwrite to db
+			// read json and write to db
 			ObjectMapper mapper = new ObjectMapper();
 			TypeReference<List<User>> typeReference = new TypeReference<List<User>>(){};
 			InputStream inputStream = TypeReference.class.getResourceAsStream("/json/users.json");
 			try {
-				//List<User> listStrings = new ArrayList<User>();
-				//User u1 = new User();
-				//u1.id= new Long(111);
-				//u1.name="nnnnn";
-				//u1.address="nnnnn";
-				//u1.phone="nnnnn";
-				//listStrings.add(u1);
-				//String b = mapper.writeValueAsString(listStrings);
 				List<User> users = mapper.readValue(inputStream, typeReference);
 				userService.save(users);
 				System.out.println("Users Saved!");
